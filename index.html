@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASE ONE | Detective Agency</title>
+<meta name="description" content="Enter CASE ONE, an interactive detective mystery game. Discover clues and solve seven mysteries.">
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#100d20;color:#fff;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:25px 15px;text-align:center;
+ background:linear-gradient(120deg,#24133f,#542b70);
+ border-bottom:3px solid #e5b95c;
+}
+header h1{margin:0;color:#ffd779;letter-spacing:6px;font-size:36px}
+header p{color:#ddd}
+nav{
+ display:flex;justify-content:center;gap:9px;
+ flex-wrap:wrap;padding:15px;background:#19142b;
+ position:sticky;top:0;z-index:10;
+}
+button{
+ border:0;border-radius:10px;padding:12px 17px;
+ background:#e5b95c;color:#24142c;
+ font-weight:bold;cursor:pointer;
+}
+button:hover{filter:brightness(1.15)}
+button.secondary{background:#59436d;color:white}
+main{max-width:1100px;margin:auto;padding:20px}
+.panel{
+ background:#211a35;border:1px solid #59436d;
+ border-radius:18px;padding:22px;margin-bottom:20px;
+}
+h2,h3{color:#ffd779}
+.hidden{display:none!important}
+.small{color:#c8bbd3;font-size:13px;line-height:1.6}
+.cases{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+ gap:15px;
+}
+.case-card{
+ background:#302443;border:1px solid #765b83;
+ border-radius:15px;padding:18px;
+}
+.emoji{font-size:42px}
+.price{font-size:27px;color:#ffd779;font-weight:bold}
+.tag{
+ display:inline-block;background:#4c3a60;color:#ffd779;
+ border-radius:20px;padding:6px 11px;font-size:12px;
+}
+.room{
+ position:relative;min-height:350px;overflow:hidden;
+ border:4px solid #b18a52;border-radius:16px;
+ background:
+ radial-gradient(ellipse at 50% 20%,#80556d 0%,transparent 45%),
+ linear-gradient(#45334c 0 65%,#39263a 65% 100%);
+}
+.room:before{
+ content:"";position:absolute;left:8%;top:12%;
+ width:24%;height:40%;background:#263a50;
+ border:8px solid #9b7449;
+ box-shadow:inset 0 0 20px #8fc7dc;
+}
+.room:after{
+ content:"";position:absolute;right:9%;top:15%;
+ width:25%;height:35%;background:#5d3c2d;
+ border:7px solid #9b7449;
+}
+.floor{
+ position:absolute;bottom:0;width:100%;height:34%;
+ background:repeating-linear-gradient(90deg,#563a43 0 70px,#68444a 72px 75px);
+}
+.detective{
+ position:absolute;z-index:3;bottom:17%;left:45%;
+ font-size:75px;animation:bob 1.5s infinite alternate;
+}
+@keyframes bob{to{transform:translateY(-8px)}}
+.clue{
+ position:absolute;z-index:4;font-size:34px;
+ cursor:pointer;filter:drop-shadow(0 0 8px gold);
+ animation:glow 1.2s infinite alternate;
+ user-select:none;
+}
+@keyframes glow{to{transform:scale(1.16);filter:drop-shadow(0 0 14px gold)}}
+#clue1{left:17%;bottom:25%}
+#clue2{right:20%;bottom:28%}
+#clue3{left:68%;top:15%}
+#clue4{left:48%;top:40%}
+#journal{
+ min-height:90px;background:#171226;
+ padding:15px;border-radius:12px;color:#eee;line-height:1.6;
+}
+input{
+ width:100%;padding:13px;border-radius:9px;
+ border:1px solid #8d709c;background:#171226;
+ color:white;margin:8px 0;
+}
+footer{text-align:center;padding:25px;color:#aaa}
+.analytics-notice{
+ position:fixed;bottom:12px;left:12px;right:12px;
+ max-width:600px;margin:auto;z-index:30;
+ background:#302443;border:1px solid #d6a84b;
+ border-radius:15px;padding:18px;
+ box-shadow:0 5px 30px #0009;
+}
+.analytics-notice p{font-size:13px;color:#ddd;line-height:1.5}
+</style>
+</head>
+
+<body>
+
+<header>
+ <h1>CASE ONE</h1>
+ <p>Every clue tells a story. Every mystery has an answer.</p>
+ <span class="tag">INTERACTIVE DETECTIVE GAME</span>
+</header>
+
+<nav>
+ <button onclick="showPage('home')">Home</button>
+ <button onclick="showPage('cases')">Cases</button>
+ <button onclick="showPage('game')">Investigation</button>
+ <button onclick="showPage('membership')">Membership</button>
+</nav>
+
+<main>
+
+<section id="home" class="panel">
+ <h2>Welcome, Detective!</h2>
+ <p>Something mysterious is happening. Your job is to investigate, discover clues and solve the cases.</p>
+ <button onclick="showPage('cases')">Start Investigating</button>
+ <h3>What's waiting for you?</h3>
+ <div class="cases">
+  <div class="case-card"><div class="emoji">🔍</div><h3>Find Clues</h3><p>Explore rooms and uncover hidden evidence.</p></div>
+  <div class="case-card"><div class="emoji">📔</div><h3>Detective Journal</h3><p>Collect clues and review your discoveries.</p></div>
+  <div class="case-card"><div class="emoji">🏆</div><h3>Solve Mysteries</h3><p>Use your investigation skills to solve each case.</p></div>
+ </div>
+</section>
+
+<section id="cases" class="panel hidden">
+ <h2>Choose Your Mystery</h2>
+ <p class="small">All seven cases are currently free to play in this demo.</p>
+ <div class="cases" id="caseList"></div>
+</section>
+
+<section id="game" class="panel hidden">
+ <h2 id="caseTitle">Investigation Room</h2>
+ <p id="caseStory">Choose a case to begin.</p>
+
+ <div class="room">
+  <div class="floor"></div>
+  <div class="detective">🕵️</div>
+  <div class="clue" id="clue1" onclick="findClue(0)">🔍</div>
+  <div class="clue" id="clue2" onclick="findClue(1)">📜</div>
+  <div class="clue" id="clue3" onclick="findClue(2)">🗝️</div>
+  <div class="clue" id="clue4" onclick="findClue(3)">📦</div>
+ </div>
+
+ <h3>Investigation Journal</h3>
+ <div id="journal">Click the glowing objects to discover clues.</div>
+
+ <h3>Detective's Final Report</h3>
+ <p class="small">Discover all four clues, then enter the answer.</p>
+ <input id="answer" placeholder="Enter your answer">
+ <button onclick="submitReport()">Submit Final Report</button>
+ <p id="result" aria-live="polite"></p>
+ <button class="secondary" onclick="showPage('cases')">Back to Cases</button>
+</section>
+
+<section id="membership" class="panel hidden">
+ <h2>CASE ONE Membership</h2>
+ <p>More mysteries and special detective experiences are planned.</p>
+
+ <div class="cases">
+  <div class="case-card">
+   <div class="emoji">🕵️</div>
+   <h3>Basic</h3>
+   <div class="price">₹99/month</div>
+   <p>Planned Basic membership.</p>
+   <span class="tag">COMING SOON</span>
+   <p><button onclick="subscriptionClick('Basic')">I'm Interested</button></p>
+  </div>
+
+  <div class="case-card">
+   <div class="emoji">🏆</div>
+   <h3>Premium</h3>
+   <div class="price">₹199/month</div>
+   <p>Planned Premium membership.</p>
+   <span class="tag">COMING SOON</span>
+   <p><button onclick="subscriptionClick('Premium')">I'm Interested</button></p>
+  </div>
+ </div>
+
+ <p id="membershipMessage" class="small">
+ No payments are being accepted at this time. All demo cases are free.
+ </p>
+</section>
+
+<section class="panel">
+ <h3>About CASE ONE</h3>
+ <p class="small">
+ CASE ONE is a fictional detective game. Investigate the rooms,
+ discover clues and solve the mysteries.
+ </p>
+ <p class="small">
+ This website uses optional anonymous analytics to understand
+ general visitor and gameplay activity. No name, phone number,
+ email address or payment information is requested by the game.
+ </p>
+</section>
+
+</main>
+
+<footer>
+ CASE ONE Detective Agency | Fictional Mystery Game
+</footer>
+
+<div class="analytics-notice" id="analyticsNotice">
+ <strong>Help improve CASE ONE</strong>
+ <p>
+ Would you like to allow Google Analytics to collect general
+ website usage information, such as page visits and game events?
+ It may use cookies or similar technologies. Please review the
+ privacy information with a parent or guardian.
+ </p>
+ <button onclick="allowAnalytics()">Allow analytics</button>
+ <button class="secondary" onclick="declineAnalytics()">Not now</button>
+</div>
+
+<script>
+/* --------------------------------
+   GOOGLE ANALYTICS CONFIGURATION
+--------------------------------- */
+
+// Replace this with your Google Analytics Measurement ID.
+// Example format: G-XXXXXXXXXX
+const GA_ID = "G-XXXXXXXXXX";
+
+let analyticsEnabled = false;
+
+function loadAnalytics(){
+ if(analyticsEnabled || GA_ID === "G-XXXXXXXXXX") return;
+
+ analyticsEnabled = true;
+
+ const script = document.createElement("script");
+ script.async = true;
+ script.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+ document.head.appendChild(script);
+
+ window.dataLayer = window.dataLayer || [];
+ function gtag(){dataLayer.push(arguments);}
+ window.gtag = gtag;
+
+ gtag("js", new Date());
+ gtag("config", GA_ID, {
+  anonymize_ip: true
+ });
+}
+
+function trackEvent(eventName, details={}){
+ if(!analyticsEnabled || typeof window.gtag !== "function") return;
+ window.gtag("event", eventName, details);
+}
+
+function allowAnalytics(){
+ try{
+  localStorage.setItem("caseOneAnalyticsConsent","yes");
+ }catch(e){}
+ document.getElementById("analyticsNotice").classList.add("hidden");
+ loadAnalytics();
+}
+
+function declineAnalytics(){
+ try{
+  localStorage.setItem("caseOneAnalyticsConsent","no");
+ }catch(e){}
+ document.getElementById("analyticsNotice").classList.add("hidden");
+}
+
+try{
+ const consent = localStorage.getItem("caseOneAnalyticsConsent");
+ if(consent){
+  document.getElementById("analyticsNotice").classList.add("hidden");
+  if(consent === "yes") loadAnalytics();
+ }
+}catch(e){}
+
+/* --------------------------------
+   GAME DATA
+--------------------------------- */
+
+const casesData = [
+ {
+  title:"The Missing Heirloom",
+  emoji:"💎",
+  story:"A valuable family heirloom has disappeared from a mansion. Four clues are waiting in the room.",
+  clues:[
+   "A dusty footprint was found near the old cabinet.",
+   "A note mentions the family archive.",
+   "A small key was found beside the window.",
+   "The final clue points toward the archive room."
+  ],
+  answer:"archive room"
+ },
+ {
+  title:"The Midnight Letter",
+  emoji:"✉️",
+  story:"A mysterious letter arrived at midnight. Discover where it came from.",
+  clues:[
+   "The envelope has a blue wax seal.",
+   "The paper has a library stamp.",
+   "A clock stopped at midnight.",
+   "The letter mentions the reading room."
+  ],
+  answer:"reading room"
+ },
+ {
+  title:"The Vanishing Painting",
+  emoji:"🖼️",
+  story:"A painting has disappeared from an art gallery.",
+  clues:[
+   "A frame was left behind.",
+   "There is a paint mark on the floor.",
+   "A visitor's note mentions the storage area.",
+   "A gallery map points to the storage room."
+  ],
+  answer:"storage room"
+ },
+ {
+  title:"The Secret Recipe",
+  emoji:"📖",
+  story:"An old recipe book has gone missing from a café.",
+  clues:[
+   "A flour-covered note was found.",
+   "A page mentions the kitchen.",
+   "A ribbon is caught near the cupboard.",
+   "The last clue points to the pantry."
+  ],
+  answer:"pantry"
+ },
+ {
+  title:"The Clockmaker's Secret",
+  emoji:"⏰",
+  story:"A clockmaker's mysterious notebook is missing.",
+  clues:[
+   "A tiny gear was found.",
+   "The notebook has a workshop label.",
+   "A clock has a hidden compartment.",
+   "The clue points to the workbench."
+  ],
+  answer:"workbench"
+ },
+ {
+  title:"The Lost Crown",
+  emoji:"👑",
+  story:"A royal exhibition's replica crown has disappeared.",
+  clues:[
+   "A velvet thread was found.",
+   "A guard's note mentions the display hall.",
+   "A glass case has a fingerprint mark.",
+   "The exhibition map points to the display hall."
+  ],
+  answer:"display hall"
+ },
+ {
+  title:"The Forgotten Diary",
+  emoji:"📔",
+  story:"A diary has vanished from an old house.",
+  clues:[
+   "A pressed flower was found.",
+   "A note mentions the attic.",
+   "A dusty box is open.",
+   "The final clue points to the attic."
+  ],
+  answer:"attic"
+ }
+];
+
+let currentCase = 0;
+let found = [];
+let solvedCases = new Set();
+let currentPage = "home";
+
+/* --------------------------------
+   NAVIGATION AND ANALYTICS
+--------------------------------- */
+
+function showPage(id){
+ document.querySelectorAll("main>section").forEach(section=>{
+  section.classList.add("hidden");
+ });
+
+ document.getElementById(id).classList.remove("hidden");
+
+ if(currentPage !== id){
+  trackEvent("page_view", {page_name:id});
+ }
+ currentPage = id;
+}
+
+/* --------------------------------
+   CASE SELECTION
+--------------------------------- */
+
+function renderCases(){
+ const list = document.getElementById("caseList");
+ list.innerHTML = "";
+
+ casesData.forEach((c,i)=>{
+  const card = document.createElement("div");
+  card.className = "case-card";
+
+  card.innerHTML = `
+   <div class="emoji">${c.emoji}</div>
+   <h3>CASE ${String(i+1).padStart(3,"0")}</h3>
+   <p>${c.title}</p>
+   <button onclick="startCase(${i})">Investigate</button>
+  `;
+
+  list.appendChild(card);
+ });
+}
+
+function startCase(i){
+ currentCase = i;
+ found = [];
+
+ document.getElementById("caseTitle").textContent =
+  "CASE "+String(i+1).padStart(3,"0")+" — "+casesData[i].title;
+
+ document.getElementById("caseStory").textContent = casesData[i].story;
+ document.getElementById("journal").textContent =
+  "Your journal is empty. Click the glowing objects to find clues.";
+
+ document.getElementById("answer").value = "";
+ document.getElementById("result").textContent = "";
+
+ document.querySelectorAll(".clue").forEach(el=>{
+  el.style.display = "block";
+ });
+
+ trackEvent("case_selected", {
+  case_number:i+1,
+  case_name:casesData[i].title
+ });
+
+ trackEvent("game_started", {
+  case_number:i+1
+ });
+
+ showPage("game");
+}
+
+/* --------------------------------
+   CLUE INVESTIGATION
+--------------------------------- */
+
+function findClue(i){
+ if(found.includes(i)){
+  document.getElementById("result").textContent =
+   "You already found this clue.";
+  return;
+ }
+
+ found.push(i);
+
+ const journal = document.getElementById("journal");
+ const entry = document.createElement("p");
+
+ entry.textContent =
+  "🔎 Clue "+(i+1)+": "+casesData[currentCase].clues[i];
+
+ journal.appendChild(entry);
+
+ document.getElementById("clue"+(i+1)).style.display = "none";
+
+ trackEvent("clue_found", {
+  case_number:currentCase+1,
+  clue_number:i+1
+ });
+
+ if(found.length === 4){
+  document.getElementById("result").textContent =
+   "All clues discovered! Submit your final report.";
+ }
+}
+
+/* --------------------------------
+   FINAL REPORT
+--------------------------------- */
+
+function submitReport(){
+ if(found.length < 4){
+  document.getElementById("result").textContent =
+   "Investigate all four clues before submitting your report.";
+  return;
+ }
+
+ const answer = document.getElementById("answer").value
+  .trim().toLowerCase().replace(/\s+/g," ");
+
+ if(answer === casesData[currentCase].answer){
+  document.getElementById("result").textContent =
+   "🎉 Mystery solved! Excellent detective work!";
+
+  if(!solvedCases.has(currentCase)){
+   solvedCases.add(currentCase);
+
+   trackEvent("case_solved", {
+    case_number:currentCase+1,
+    case_name:casesData[currentCase].title
+   });
+  }
+
+ }else{
+  document.getElementById("result").textContent =
+   "Not quite! Review your journal and try again.";
+ }
+}
+
+/* --------------------------------
+   MEMBERSHIP INTEREST
+--------------------------------- */
+
+function subscriptionClick(plan){
+ trackEvent("subscription_clicked", {
+  subscription_plan:plan
+ });
+
+ document.getElementById("membershipMessage").textContent =
+  "Thanks for your interest in "+plan+
+  "! Membership is coming soon. No payment has been taken.";
+}
+
+renderCases();
+</script>
+
+</body>
+</html>
